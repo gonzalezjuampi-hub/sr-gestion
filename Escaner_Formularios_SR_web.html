@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SR — Escáner de Formularios</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #f8f4f0; color: #222; min-height: 100vh; }
+
+  header {
+    background: #5C0A22;
+    color: #fff;
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  header h1 { font-size: 20px; font-weight: 600; letter-spacing: 0.02em; }
+  header p { font-size: 13px; opacity: 0.75; margin-top: 2px; }
+  .wine-icon { font-size: 28px; }
+
+  .container { max-width: 860px; margin: 32px auto; padding: 0 24px 60px; }
+
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #e8ddd5;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #5C0A22;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .step-num {
+    width: 22px; height: 22px;
+    background: #5C0A22;
+    color: #fff;
+    border-radius: 50%;
+    font-size: 11px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* API KEY */
+  .api-row { display: flex; gap: 10px; align-items: center; }
+  .api-row input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid #d8ccc5;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: 'Courier New', monospace;
+    background: #faf8f6;
+    color: #222;
+  }
+  .api-row input:focus { outline: none; border-color: #8B1A34; }
+  .api-note { font-size: 12px; color: #888; margin-top: 8px; }
+  .api-note a { color: #5C0A22; }
+
+  /* DROP ZONE */
+  .drop-zone {
+    border: 2px dashed #c9a8b0;
+    border-radius: 10px;
+    padding: 36px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    position: relative;
+    background: #fdf8f9;
+  }
+  .drop-zone:hover, .drop-zone.drag-over { background: #fbeef1; border-color: #8B1A34; }
+  .drop-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .drop-icon { font-size: 40px; margin-bottom: 12px; }
+  .drop-text { font-size: 15px; font-weight: 600; color: #333; margin-bottom: 4px; }
+  .drop-sub { font-size: 13px; color: #888; }
+  #previewImg { max-width: 100%; max-height: 220px; border-radius: 8px; margin-top: 16px; border: 1px solid #ddd; object-fit: contain; display: none; }
+
+  /* FUENTE TOGGLE */
+  .toggle-row { display: flex; gap: 10px; align-items: center; margin-top: 14px; flex-wrap: wrap; }
+  .toggle-label { font-size: 13px; color: #666; }
+  .toggle-btn {
+    padding: 7px 16px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    background: #fff;
+    font-size: 13px;
+    cursor: pointer;
+    color: #555;
+    transition: all 0.1s;
+  }
+  .toggle-btn.active-manual { background: #FFF3E0; border-color: #E65100; color: #E65100; font-weight: 600; }
+  .toggle-btn.active-form   { background: #EDF7ED; border-color: #2E7D32; color: #2E7D32; font-weight: 600; }
+
+  /* BUTTON */
+  .btn-extract {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: #5C0A22;
+    color: #fff;
+    border: none;
+    padding: 13px 28px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    margin-top: 16px;
+  }
+  .btn-extract:hover { background: #8B1A34; }
+  .btn-extract:active { transform: scale(0.98); }
+  .btn-extract:disabled { opacity: 0.45; cursor: not-allowed; }
+  .spinner {
+    width: 18px; height: 18px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: inline-block;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .status-msg {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-top: 12px;
+  }
+  .status-ok   { background: #EDF7ED; color: #2E7D32; }
+  .status-err  { background: #FEECEC; color: #C62828; }
+  .status-load { background: #E8F0FE; color: #1565C0; }
+
+  /* FIELDS */
+  .fields-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-top: 4px;
+  }
+  .field-item { display: flex; flex-direction: column; gap: 4px; }
+  .field-item label { font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.06em; }
+  .field-item input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: 'Segoe UI', sans-serif;
+    color: #222;
+    background: #fafafa;
+    transition: border-color 0.1s;
+  }
+  .field-item input:focus { outline: none; border-color: #8B1A34; background: #fff; }
+
+  /* EXPORT */
+  .export-bar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-top: 20px;
+    padding: 16px;
+    background: #f8f4f0;
+    border-radius: 10px;
+    border: 1px solid #e8ddd5;
+    flex-wrap: wrap;
+  }
+  .export-bar span { font-size: 13px; color: #666; flex: 1; min-width: 180px; }
+  .btn-export {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.1s, transform 0.1s;
+  }
+  .btn-export:active { transform: scale(0.98); }
+  .btn-green  { background: #2E7D32; color: #fff; }
+  .btn-green:hover { background: #1B5E20; }
+  .btn-wine   { background: #5C0A22; color: #fff; }
+  .btn-wine:hover { background: #8B1A34; }
+  .btn-clear  { background: #fff; color: #888; border: 1px solid #ddd; }
+  .btn-clear:hover { background: #f5f5f5; }
+
+  /* HISTORY */
+  .history-list { margin-top: 4px; }
+  .history-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    margin-bottom: 8px;
+    gap: 12px;
+    background: #fafafa;
+  }
+  .history-item .hi-name { font-size: 14px; font-weight: 600; flex: 1; }
+  .history-item .hi-meta { font-size: 12px; color: #888; }
+  .hi-fuente {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+  .hi-manual   { background: #FFF3E0; color: #E65100; }
+  .hi-formulario { background: #EDF7ED; color: #2E7D32; }
+  .hi-del { background: none; border: none; color: #ccc; cursor: pointer; font-size: 16px; padding: 4px; }
+  .hi-del:hover { color: #C62828; }
+  .empty-state { font-size: 13px; color: #aaa; text-align: center; padding: 20px 0; }
+
+  /* EXPORT ALL */
+  .export-all-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #5C0A22;
+    color: #fff;
+    border: none;
+    padding: 11px 22px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 12px;
+  }
+  .export-all-btn:hover { background: #8B1A34; }
+  .export-all-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .badge-count {
+    background: #C9A84C;
+    color: #fff;
+    border-radius: 20px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-left: 4px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wine-icon">🍷</div>
+  <div>
+    <h1>SR — Escáner de Formularios</h1>
+    <p>Escáner inteligente de formularios · Versión compartida SR</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- PASO 1: API KEY (hidden - key hardcoded) -->
+  <!-- Paso 1 oculto: clave configurada por el administrador -->
+
+  <!-- PASO 2: SUBIR FORMULARIO -->
+  <div class="card">
+    <div class="card-title"><span class="step-num">1</span> Subir formulario</div>
+    <div class="drop-zone" id="dropZone">
+      <input type="file" id="fileInput" accept="image/*,.pdf,.doc,.docx" />
+      <div class="drop-icon">📄</div>
+      <div class="drop-text">Arrastrá el archivo o hacé clic para seleccionar</div>
+      <div class="drop-sub">JPG, PNG, PDF — foto con el celular funciona perfecto</div>
+      <img id="previewImg" alt="Vista previa del formulario" />
+    </div>
+
+    <div class="toggle-row">
+      <span class="toggle-label">Fuente:</span>
+      <button class="toggle-btn active-manual" id="btnManual" onclick="setFuente('Manual')">✍️ Manual (impreso)</button>
+      <button class="toggle-btn" id="btnForm" onclick="setFuente('Formulario')">📋 Formulario web</button>
+    </div>
+
+    <div>
+      <button class="btn-extract" id="extractBtn" onclick="extractData()" disabled>
+        ✨ Extraer datos con IA
+      </button>
+      <div id="statusBox"></div>
+    </div>
+  </div>
+
+  <!-- PASO 3: REVISAR Y EXPORTAR -->
+  <div class="card" id="resultCard" style="display:none">
+    <div class="card-title"><span class="step-num">2</span> Revisá y corregí los datos</div>
+    <div class="fields-grid" id="fieldsGrid"></div>
+
+    <div class="export-bar">
+      <span>Verificá los datos y luego exportá a Excel o agregá a la lista para exportar varios juntos.</span>
+      <button class="btn-export btn-green" onclick="exportSingle()">⬇️ Descargar este cliente (.xlsx)</button>
+      <button class="btn-export btn-wine" onclick="addToList()">➕ Agregar a la lista</button>
+      <button class="btn-export btn-clear" onclick="clearForm()">🗑 Limpiar</button>
+    </div>
+  </div>
+
+  <!-- PASO 4: LISTA PARA EXPORTAR -->
+  <div class="card">
+    <div class="card-title">
+      <span class="step-num">3</span>
+      Lista de clientes procesados
+      <span class="badge-count" id="listCount">0</span>
+    </div>
+    <div class="history-list" id="historyList">
+      <div class="empty-state">Todavía no agregaste ningún cliente.<br>Procesá un formulario y hacé clic en "Agregar a la lista".</div>
+    </div>
+    <button class="export-all-btn" id="exportAllBtn" onclick="exportAll()" disabled>
+      📊 Exportar todos a Excel (.xlsx)
+    </button>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+const COLUMNS = ['Name','Fuente','Email','Phone Number','Country','State','City','Address','Zip Code','Qty Bottles','Pickup Location','Next Visit','Notes'];
+const LABELS  = {
+  'Name':'Nombre','Fuente':'Fuente','Email':'Email','Phone Number':'Teléfono',
+  'Country':'País','State':'Estado','City':'Ciudad','Address':'Dirección',
+  'Zip Code':'Código Postal','Qty Bottles':'Cant. Botellas',
+  'Pickup Location':'Lugar de Retiro','Next Visit':'Próxima Visita','Notes':'Notas'
+};
+
+let imageBase64 = null;
+let imageMediaType = 'image/jpeg';
+let fuente = 'Manual';
+let currentData = {};
+let clientList = [];
+
+// Key configured by admin
+const SR_API_KEY = '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';
+
+function saveKey() {}
+function setKeyStatus() {}
+
+function setFuente(f) {
+  fuente = f;
+  document.getElementById('btnManual').className = 'toggle-btn' + (f === 'Manual' ? ' active-manual' : '');
+  document.getElementById('btnForm').className   = 'toggle-btn' + (f === 'Formulario' ? ' active-form' : '');
+  if (currentData['Fuente'] !== undefined) {
+    currentData['Fuente'] = f;
+    const inp = document.querySelector('[data-key="Fuente"]');
+    if (inp) inp.value = f;
+  }
+}
+
+const dropZone  = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const previewImg = document.getElementById('previewImg');
+
+dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); handleFile(e.dataTransfer.files[0]); });
+fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+
+function handleFile(file) {
+  if (!file) return;
+  const type = file.type || '';
+  const name = file.name.toLowerCase();
+  // Only accept images for preview/AI
+  const isImage = type.startsWith('image/') || name.endsWith('.jpg') || name.endsWith('.png') || name.endsWith('.jpeg') || name.endsWith('.heic') || name.endsWith('.webp');
+  const isPdf   = type === 'application/pdf' || name.endsWith('.pdf');
+
+  if (!isImage && !isPdf) {
+    setStatus('⚠️ Por favor subí una imagen (JPG, PNG) o PDF del formulario.', 'err');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    const result = e.target.result;
+    imageBase64 = result.split(',')[1];
+    imageMediaType = isPdf ? 'application/pdf' : (type || 'image/jpeg');
+    if (isImage) {
+      previewImg.src = result;
+      previewImg.style.display = 'block';
+    } else {
+      previewImg.style.display = 'none';
+    }
+    document.getElementById('extractBtn').disabled = false;
+    document.getElementById('resultCard').style.display = 'none';
+    document.getElementById('statusBox').innerHTML = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+function setStatus(msg, type) {
+  document.getElementById('statusBox').innerHTML = `<div class="status-msg status-${type}">${msg}</div>`;
+}
+
+async function extractData() {
+  const apiKey = SR_API_KEY;
+  if (!apiKey || apiKey === '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') { setStatus('⚠️ El administrador no configuró la clave de API.', 'err'); return; }
+  if (!imageBase64) { setStatus('⚠️ Primero subí una imagen del formulario.', 'err'); return; }
+
+  document.getElementById('extractBtn').disabled = true;
+  document.getElementById('extractBtn').innerHTML = '<span class="spinner"></span> Leyendo formulario...';
+  setStatus('La IA está analizando el formulario, esperá unos segundos...', 'load');
+  document.getElementById('resultCard').style.display = 'none';
+
+  const prompt = `You are a data extraction assistant for a wine shipping company called SR (Argentina Wine Shipping).
+Analyze this scanned/photographed customer shipping form and extract ALL visible fields.
+Return ONLY a valid JSON object with these exact keys (use empty string "" if not found):
+{
+  "Name": "full customer name",
+  "Email": "email address",
+  "Phone Number": "best phone number (cell preferred)",
+  "Country": "country (usually USA)",
+  "State": "US state or province",
+  "City": "city",
+  "Address": "street address",
+  "Zip Code": "zip or postal code",
+  "Qty Bottles": "total number of bottles as a number",
+  "Pickup Location": "where wines are picked up or shipped from",
+  "Next Visit": "next visit date if present, format DD/MM/YYYY",
+  "Notes": "wine names, brands, varietals, years, or any other info"
+}
+Return ONLY the raw JSON. No explanation, no markdown, no backticks.`;
+
+  try {
+    const contentParts = [
+      { type: 'text', text: prompt }
+    ];
+
+    if (imageMediaType === 'application/pdf') {
+      contentParts.unshift({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: imageBase64 } });
+    } else {
+      contentParts.unshift({ type: 'image', source: { type: 'base64', media_type: imageMediaType, data: imageBase64 } });
+    }
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: contentParts }]
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error?.message || `Error ${res.status}`);
+    }
+
+    const data = await res.json();
+    const text = (data.content || []).map(b => b.text || '').join('');
+    const clean = text.replace(/```json|```/g, '').trim();
+    currentData = JSON.parse(clean);
+    currentData['Fuente'] = fuente;
+
+    renderFields();
+    setStatus('✅ Datos extraídos correctamente. Revisalos y corregí lo que sea necesario.', 'ok');
+    document.getElementById('resultCard').style.display = 'block';
+    document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  } catch (e) {
+    setStatus(`❌ Error: ${e.message}. Verificá tu clave de API o intentá con una imagen más clara.`, 'err');
+    console.error(e);
+  }
+
+  document.getElementById('extractBtn').disabled = false;
+  document.getElementById('extractBtn').innerHTML = '✨ Extraer datos con IA';
+}
+
+function renderFields() {
+  const grid = document.getElementById('fieldsGrid');
+  grid.innerHTML = '';
+  COLUMNS.forEach(key => {
+    const val = currentData[key] || '';
+    const item = document.createElement('div');
+    item.className = 'field-item';
+    item.innerHTML = `<label>${LABELS[key]}</label>
+      <input type="text" data-key="${key}" value="${String(val).replace(/"/g,'&quot;')}" oninput="currentData[this.dataset.key]=this.value" />`;
+    grid.appendChild(item);
+  });
+}
+
+function buildRow(data) {
+  return COLUMNS.map(k => data[k] || '');
+}
+
+function exportSingle() {
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet([
+    COLUMNS.map(k => LABELS[k]),
+    buildRow(currentData)
+  ]);
+  ws['!cols'] = COLUMNS.map(() => ({ wch: 20 }));
+  XLSX.utils.book_append_sheet(wb, ws, 'Cliente');
+  const name = (currentData['Name'] || 'cliente').replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '_');
+  XLSX.writeFile(wb, `SR_${name}.xlsx`);
+}
+
+function addToList() {
+  if (!currentData['Name']) { alert('No hay datos para agregar. Primero extraé un formulario.'); return; }
+  clientList.push({ ...currentData });
+  renderHistory();
+  clearForm();
+  document.getElementById('historyList').scrollIntoView({ behavior: 'smooth' });
+}
+
+function renderHistory() {
+  const el = document.getElementById('historyList');
+  document.getElementById('listCount').textContent = clientList.length;
+  document.getElementById('exportAllBtn').disabled = clientList.length === 0;
+
+  if (clientList.length === 0) {
+    el.innerHTML = '<div class="empty-state">Todavía no agregaste ningún cliente.<br>Procesá un formulario y hacé clic en "Agregar a la lista".</div>';
+    return;
+  }
+
+  el.innerHTML = clientList.map((c, i) => `
+    <div class="history-item">
+      <div class="hi-name">${c['Name'] || '(sin nombre)'}</div>
+      <div class="hi-meta">${c['City'] || ''} ${c['State'] || ''} · ${c['Email'] || ''}</div>
+      <span class="hi-fuente ${c['Fuente'] === 'Manual' ? 'hi-manual' : 'hi-formulario'}">${c['Fuente'] || ''}</span>
+      <button class="hi-del" onclick="removeFromList(${i})" title="Eliminar">✕</button>
+    </div>
+  `).join('');
+}
+
+function removeFromList(i) {
+  clientList.splice(i, 1);
+  renderHistory();
+}
+
+function exportAll() {
+  if (clientList.length === 0) return;
+  const wb = XLSX.utils.book_new();
+  const rows = [COLUMNS.map(k => LABELS[k]), ...clientList.map(buildRow)];
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = COLUMNS.map(() => ({ wch: 22 }));
+  XLSX.utils.book_append_sheet(wb, ws, 'Clientes SR');
+  const today = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, `SR_Clientes_${today}.xlsx`);
+}
+
+function clearForm() {
+  imageBase64 = null;
+  currentData = {};
+  previewImg.style.display = 'none';
+  previewImg.src = '';
+  fileInput.value = '';
+  document.getElementById('extractBtn').disabled = true;
+  document.getElementById('resultCard').style.display = 'none';
+  document.getElementById('statusBox').innerHTML = '';
+}
+</script>
+</body>
+</html>

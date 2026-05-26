@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SR — Panel de Gestión</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#f8f4f0;min-height:100vh}
+
+header{
+  background:linear-gradient(135deg,#5C0A22 0%,#8B1A34 100%);
+  color:#fff;padding:40px 32px 32px;text-align:center;
+  position:relative;overflow:hidden;
+}
+header::before{
+  content:'🍷';font-size:120px;position:absolute;right:-10px;top:-20px;
+  opacity:0.08;transform:rotate(15deg);
+}
+header h1{font-size:28px;font-weight:300;letter-spacing:0.08em;margin-bottom:6px}
+header h1 strong{font-weight:700}
+header p{font-size:14px;opacity:0.7;margin-top:4px}
+.gold{color:#C9A84C}
+
+.container{max-width:900px;margin:0 auto;padding:40px 24px 60px}
+
+.welcome{
+  background:#fff;border-radius:14px;border:1px solid #e8ddd5;
+  padding:24px 28px;margin-bottom:32px;
+  display:flex;align-items:center;gap:16px;
+}
+.welcome-icon{font-size:36px;flex-shrink:0}
+.welcome h2{font-size:17px;font-weight:600;color:#5C0A22;margin-bottom:4px}
+.welcome p{font-size:13px;color:#666;line-height:1.6}
+
+.section-label{
+  font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:0.1em;color:#888;margin-bottom:14px;
+  display:flex;align-items:center;gap:8px;
+}
+.section-label::after{content:'';flex:1;height:1px;background:#e8ddd5}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:36px}
+
+.card{
+  background:#fff;border-radius:14px;border:1px solid #e8ddd5;
+  overflow:hidden;text-decoration:none;color:inherit;
+  transition:transform 0.15s,box-shadow 0.15s;
+  display:flex;flex-direction:column;
+}
+.card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(92,10,34,0.12)}
+
+.card-top{
+  padding:24px 22px 16px;flex:1;
+}
+.card-icon{font-size:32px;margin-bottom:12px;display:block}
+.card-title{font-size:16px;font-weight:700;color:#222;margin-bottom:6px}
+.card-desc{font-size:13px;color:#666;line-height:1.6}
+
+.card-footer{
+  padding:12px 22px;border-top:1px solid #f0e8e3;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.card-tag{
+  font-size:11px;font-weight:600;padding:3px 10px;
+  border-radius:20px;
+}
+.card-arrow{font-size:16px;color:#C9A84C;font-weight:700}
+
+/* Color accents per card */
+.card-a .card-top{border-top:4px solid #5C0A22}
+.card-a .card-tag{background:#fde8ec;color:#8B1A34}
+.card-b .card-top{border-top:4px solid #C9A84C}
+.card-b .card-tag{background:#fdf3d7;color:#8a6800}
+.card-c .card-top{border-top:4px solid #1565C0}
+.card-c .card-tag{background:#e8f0fe;color:#1565C0}
+
+.tip{
+  background:#fdf8f0;border:1px solid #e8d5b0;border-radius:10px;
+  padding:16px 20px;margin-top:4px;
+}
+.tip p{font-size:13px;color:#555;line-height:1.7}
+.tip strong{color:#5C0A22}
+
+footer{
+  text-align:center;font-size:12px;color:#aaa;padding:20px;
+  border-top:1px solid #e8ddd5;margin-top:40px;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🍷 <strong>SR</strong> — Panel de Gestión</h1>
+  <p>Sistema interno · <span class="gold">Herramientas del equipo</span></p>
+</header>
+
+<div class="container">
+
+  <div class="welcome">
+    <div class="welcome-icon">👋</div>
+    <div>
+      <h2>Bienvenido al sistema SR</h2>
+      <p>Desde acá podés acceder a todas las herramientas del equipo: escanear formularios de clientes, ver el alcance internacional en mapas y consultar la estrategia de pauta publicitaria por estado.</p>
+    </div>
+  </div>
+
+  <div class="section-label">Herramientas operativas</div>
+  <div class="cards">
+
+    <a href="Escaner_Formularios_SR_web.html" class="card card-a">
+      <div class="card-top">
+        <span class="card-icon">📄</span>
+        <div class="card-title">Escáner de Formularios</div>
+        <div class="card-desc">Subí la foto o PDF de un formulario impreso y la IA extrae automáticamente todos los datos del cliente: nombre, email, teléfono, dirección y más.</div>
+      </div>
+      <div class="card-footer">
+        <span class="card-tag">Uso diario</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="section-label">Informes y estrategia</div>
+  <div class="cards">
+
+    <a href="SR_Mapas_Clientes.html" class="card card-b">
+      <div class="card-top">
+        <span class="card-icon">🌍</span>
+        <div class="card-title">Mapas de Clientes</div>
+        <div class="card-desc">Visualizá el alcance internacional del negocio. Mapa mundial por país y mapa de USA por estado con 919 clientes de 23 países.</div>
+      </div>
+      <div class="card-footer">
+        <span class="card-tag">Gerencia · Presentaciones</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+    <a href="SR_Pauta_Publicitaria.html" class="card card-c">
+      <div class="card-top">
+        <span class="card-icon">📣</span>
+        <div class="card-title">Pauta Publicitaria</div>
+        <div class="card-desc">Estrategia de comunicación segmentada por estado: 4 perfiles de mercado, mensajes sugeridos y canales recomendados para cada región.</div>
+      </div>
+      <div class="card-footer">
+        <span class="card-tag">Marketing · Gerencia</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+  </div>
+
+
+  <div class="tip">
+    <p>💡 <strong>Para agregar nuevos clientes a la base:</strong> usá el Escáner para procesar formularios impresos → exportá el Excel → pegalo en la hoja "➕ Ingresar Clientes" de la base → verificá duplicados en la hoja "🔍 Duplicados".</p>
+  </div>
+
+</div>
+
+<footer>SR Sistema Interno · Desarrollado con IA · 2026</footer>
+
+</body>
+</html>

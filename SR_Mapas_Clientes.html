@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SR — Mapas de Clientes</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', sans-serif; background: #f8f4f0; }
+header {
+  background: #5C0A22; color: #fff;
+  padding: 16px 28px; display: flex; align-items: center; gap: 14px;
+}
+header h1 { font-size: 19px; font-weight: 600; }
+header p { font-size: 12px; opacity: 0.7; margin-top: 2px; }
+.tabs {
+  display: flex; gap: 0;
+  background: #3d0617;
+  padding: 0 28px;
+}
+.tab {
+  padding: 11px 22px; cursor: pointer; font-size: 14px; font-weight: 500;
+  color: rgba(255,255,255,0.6); border-bottom: 3px solid transparent;
+  transition: all 0.15s;
+}
+.tab:hover { color: #fff; }
+.tab.active { color: #fff; border-bottom-color: #C9A84C; }
+.container { padding: 20px 28px; }
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* STATS */
+.stats-row {
+  display: flex; gap: 14px; margin-bottom: 20px; flex-wrap: wrap;
+}
+.stat-card {
+  background: #fff; border-radius: 10px; border: 1px solid #e8ddd5;
+  padding: 14px 20px; min-width: 130px; text-align: center;
+}
+.stat-card .num { font-size: 28px; font-weight: 700; color: #5C0A22; font-family: Georgia; }
+.stat-card .lbl { font-size: 12px; color: #888; margin-top: 2px; }
+
+/* MAP */
+.map-card {
+  background: #fff; border-radius: 12px; border: 1px solid #e8ddd5;
+  overflow: hidden; margin-bottom: 20px;
+}
+.map-title {
+  padding: 14px 20px; font-size: 14px; font-weight: 600;
+  color: #5C0A22; border-bottom: 1px solid #f0e8e3;
+  display: flex; align-items: center; gap: 8px;
+}
+#worldMap, #usaMap { height: 440px; }
+
+/* TABLE */
+.table-card {
+  background: #fff; border-radius: 12px; border: 1px solid #e8ddd5;
+  overflow: hidden;
+}
+.table-title {
+  padding: 14px 20px; font-size: 14px; font-weight: 600;
+  color: #5C0A22; border-bottom: 1px solid #f0e8e3;
+}
+table { width: 100%; border-collapse: collapse; }
+th {
+  background: #5C0A22; color: #fff; padding: 9px 16px;
+  font-size: 12px; text-align: left; font-weight: 600;
+}
+td { padding: 8px 16px; font-size: 13px; border-bottom: 1px solid #f5f0ed; }
+tr:hover td { background: #fdf7f4; }
+.bar-cell { display: flex; align-items: center; gap: 8px; }
+.bar {
+  height: 8px; background: #8B1A34; border-radius: 4px;
+  min-width: 2px;
+}
+.pct { font-size: 11px; color: #888; white-space: nowrap; }
+.rank { color: #C9A84C; font-weight: 700; font-size: 13px; }
+.country-flag { font-size: 18px; }
+
+/* Grid for two-column layout */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div style="font-size:28px">🍷</div>
+  <div>
+    <h1>SR — Alcance Internacional de Clientes</h1>
+    <p>919 clientes · 23 países · 40+ estados de USA</p>
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('mundial')">🌍 Mapa Mundial</div>
+  <div class="tab" onclick="showTab('usa')">🇺🇸 Mapa USA por Estado</div>
+  <div class="tab" onclick="showTab('paises')">📊 Ranking Países</div>
+  <div class="tab" onclick="showTab('estados')">📊 Ranking Estados</div>
+</div>
+
+<div class="container">
+
+  <!-- STATS SIEMPRE VISIBLES -->
+  <div class="stats-row">
+    <div class="stat-card"><div class="num">919</div><div class="lbl">Clientes totales</div></div>
+    <div class="stat-card"><div class="num">785</div><div class="lbl">De USA</div></div>
+    <div class="stat-card"><div class="num">134</div><div class="lbl">Internacionales</div></div>
+    <div class="stat-card"><div class="num">23</div><div class="lbl">Países</div></div>
+    <div class="stat-card"><div class="num">40+</div><div class="lbl">Estados USA</div></div>
+  </div>
+
+  <!-- TAB: MAPA MUNDIAL -->
+  <div id="panel-mundial" class="panel active">
+    <div class="map-card">
+      <div class="map-title">🌍 Distribución mundial de clientes</div>
+      <div id="worldMap"></div>
+    </div>
+  </div>
+
+  <!-- TAB: MAPA USA -->
+  <div id="panel-usa" class="panel">
+    <div class="map-card">
+      <div class="map-title">🇺🇸 Clientes por estado de USA (hover para ver detalles)</div>
+      <div id="usaMap"></div>
+    </div>
+  </div>
+
+  <!-- TAB: RANKING PAÍSES -->
+  <div id="panel-paises" class="panel">
+    <div class="table-card">
+      <div class="table-title">🌍 Ranking de países</div>
+      <table id="countryTable"></table>
+    </div>
+  </div>
+
+  <!-- TAB: RANKING ESTADOS -->
+  <div id="panel-estados" class="panel">
+    <div class="table-card">
+      <div class="table-title">🇺🇸 Ranking de estados USA</div>
+      <table id="stateTable"></table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const countryData = [
+  {country:'USA', clients:785, lat:37.09, lng:-95.71, flag:'🇺🇸'},
+  {country:'UK', clients:32, lat:51.5, lng:-0.12, flag:'🇬🇧'},
+  {country:'Peru', clients:16, lat:-9.19, lng:-75.01, flag:'🇵🇪'},
+  {country:'Argentina', clients:13, lat:-38.4, lng:-63.6, flag:'🇦🇷'},
+  {country:'Australia', clients:10, lat:-25.27, lng:133.77, flag:'🇦🇺'},
+  {country:'Colombia', clients:8, lat:4.57, lng:-74.29, flag:'🇨🇴'},
+  {country:'Netherlands', clients:8, lat:52.13, lng:5.29, flag:'🇳🇱'},
+  {country:'Switzerland', clients:7, lat:46.82, lng:8.23, flag:'🇨🇭'},
+  {country:'Germany', clients:7, lat:51.17, lng:10.45, flag:'🇩🇪'},
+  {country:'France', clients:6, lat:46.23, lng:2.21, flag:'🇫🇷'},
+  {country:'Italy', clients:5, lat:41.87, lng:12.57, flag:'🇮🇹'},
+  {country:'Brazil', clients:5, lat:-14.24, lng:-51.93, flag:'🇧🇷'},
+  {country:'Spain', clients:3, lat:40.46, lng:-3.75, flag:'🇪🇸'},
+  {country:'Belgium', clients:2, lat:50.5, lng:4.47, flag:'🇧🇪'},
+  {country:'Mexico', clients:2, lat:23.63, lng:-102.55, flag:'🇲🇽'},
+  {country:'Poland', clients:2, lat:51.92, lng:19.15, flag:'🇵🇱'},
+  {country:'Canada', clients:2, lat:56.13, lng:-106.35, flag:'🇨🇦'},
+  {country:'Chile', clients:1, lat:-35.68, lng:-71.54, flag:'🇨🇱'},
+  {country:'Singapore', clients:1, lat:1.35, lng:103.82, flag:'🇸🇬'},
+  {country:'South Korea', clients:1, lat:35.91, lng:127.77, flag:'🇰🇷'},
+  {country:'Hong Kong', clients:1, lat:22.32, lng:114.17, flag:'🇭🇰'},
+  {country:'Austria', clients:1, lat:47.52, lng:14.55, flag:'🇦🇹'},
+  {country:'Israel', clients:1, lat:31.05, lng:34.85, flag:'🇮🇱'},
+];
+
+const stateData = [
+  {state:'Florida', clients:90, abbr:'FL'},
+  {state:'California', clients:51, abbr:'CA'},
+  {state:'New York', clients:50, abbr:'NY'},
+  {state:'Texas', clients:47, abbr:'TX'},
+  {state:'Virginia', clients:22, abbr:'VA'},
+  {state:'Puerto Rico', clients:22, abbr:'PR'},
+  {state:'Illinois', clients:20, abbr:'IL'},
+  {state:'Colorado', clients:19, abbr:'CO'},
+  {state:'North Carolina', clients:16, abbr:'NC'},
+  {state:'Georgia', clients:16, abbr:'GA'},
+  {state:'Massachusetts', clients:14, abbr:'MA'},
+  {state:'Michigan', clients:14, abbr:'MI'},
+  {state:'Oregon', clients:13, abbr:'OR'},
+  {state:'New Jersey', clients:12, abbr:'NJ'},
+  {state:'Connecticut', clients:10, abbr:'CT'},
+  {state:'Missouri', clients:10, abbr:'MO'},
+  {state:'District of Columbia', clients:9, abbr:'DC'},
+  {state:'Ohio', clients:9, abbr:'OH'},
+  {state:'Pennsylvania', clients:9, abbr:'PA'},
+  {state:'Tennessee', clients:8, abbr:'TN'},
+  {state:'Arizona', clients:7, abbr:'AZ'},
+  {state:'Maryland', clients:7, abbr:'MD'},
+  {state:'Washington', clients:6, abbr:'WA'},
+  {state:'Nevada', clients:6, abbr:'NV'},
+  {state:'South Carolina', clients:6, abbr:'SC'},
+  {state:'Montana', clients:4, abbr:'MT'},
+  {state:'Nebraska', clients:3, abbr:'NE'},
+  {state:'Kentucky', clients:3, abbr:'KY'},
+  {state:'Wisconsin', clients:3, abbr:'WI'},
+  {state:'Indiana', clients:3, abbr:'IN'},
+  {state:'Maine', clients:3, abbr:'ME'},
+  {state:'New Hampshire', clients:2, abbr:'NH'},
+  {state:'Idaho', clients:2, abbr:'ID'},
+  {state:'Minnesota', clients:2, abbr:'MN'},
+  {state:'Alaska', clients:2, abbr:'AK'},
+  {state:'Arkansas', clients:2, abbr:'AR'},
+  {state:'Utah', clients:1, abbr:'UT'},
+  {state:'New Mexico', clients:1, abbr:'NM'},
+];
+
+// State lat/lng centers
+const stateCoords = {
+  'Florida':{lat:27.99,lng:-81.76},'California':{lat:36.17,lng:-119.74},
+  'New York':{lat:42.97,lng:-75.82},'Texas':{lat:31.97,lng:-99.9},
+  'Virginia':{lat:37.77,lng:-78.17},'Puerto Rico':{lat:18.22,lng:-66.59},
+  'Illinois':{lat:40.35,lng:-88.99},'Colorado':{lat:39.06,lng:-105.31},
+  'North Carolina':{lat:35.63,lng:-79.81},'Georgia':{lat:33.04,lng:-83.64},
+  'Massachusetts':{lat:42.41,lng:-71.38},'Michigan':{lat:44.31,lng:-85.6},
+  'Oregon':{lat:44.57,lng:-122.07},'New Jersey':{lat:40.3,lng:-74.52},
+  'Connecticut':{lat:41.6,lng:-72.68},'Missouri':{lat:38.46,lng:-92.29},
+  'District of Columbia':{lat:38.9,lng:-77.03},'Ohio':{lat:40.39,lng:-82.76},
+  'Pennsylvania':{lat:40.59,lng:-77.21},'Tennessee':{lat:35.86,lng:-86.35},
+  'Arizona':{lat:34.17,lng:-111.09},'Maryland':{lat:39.06,lng:-76.8},
+  'Washington':{lat:47.4,lng:-121.49},'Nevada':{lat:39.33,lng:-116.63},
+  'South Carolina':{lat:33.84,lng:-80.9},'Montana':{lat:46.88,lng:-110.36},
+  'Nebraska':{lat:41.49,lng:-99.9},'Kentucky':{lat:37.84,lng:-84.67},
+  'Wisconsin':{lat:44.27,lng:-89.62},'Indiana':{lat:40.27,lng:-86.13},
+  'Maine':{lat:45.25,lng:-69.44},'New Hampshire':{lat:43.45,lng:-71.56},
+  'Idaho':{lat:44.24,lng:-114.48},'Minnesota':{lat:46.39,lng:-94.64},
+  'Alaska':{lat:64.2,lng:-153.37},'Arkansas':{lat:34.97,lng:-92.37},
+  'Utah':{lat:39.32,lng:-111.09},'New Mexico':{lat:34.84,lng:-106.25},
+};
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+let worldMapInit = false, usaMapInit = false;
+
+function showTab(id) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  const tabs = ['mundial','usa','paises','estados'];
+  document.querySelectorAll('.tab')[tabs.indexOf(id)].classList.add('active');
+  document.getElementById('panel-'+id).classList.add('active');
+  if (id === 'mundial' && !worldMapInit) { initWorldMap(); worldMapInit = true; }
+  if (id === 'usa' && !usaMapInit) { initUSAMap(); usaMapInit = true; }
+  if (id === 'paises') buildCountryTable();
+  if (id === 'estados') buildStateTable();
+}
+
+// ── MAPA MUNDIAL ──────────────────────────────────────────────────────────────
+function initWorldMap() {
+  const map = L.map('worldMap', {zoomControl:true}).setView([20, 0], 2);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap © CARTO', maxZoom: 18
+  }).addTo(map);
+
+  const max = Math.max(...countryData.map(d=>d.clients));
+  countryData.forEach(d => {
+    const r = Math.max(10, Math.sqrt(d.clients/max)*50);
+    const pct = (d.clients/919*100).toFixed(1);
+    const circle = L.circleMarker([d.lat, d.lng], {
+      radius: r,
+      fillColor: d.country==='USA' ? '#5C0A22' : '#C9A84C',
+      color: '#fff', weight: 2,
+      fillOpacity: 0.85
+    }).addTo(map);
+    circle.bindPopup(`
+      <div style="font-family:Segoe UI;min-width:160px">
+        <div style="font-size:20px;text-align:center">${d.flag}</div>
+        <div style="font-weight:700;font-size:15px;text-align:center;color:#5C0A22">${d.country}</div>
+        <hr style="border-color:#f0e0e5;margin:6px 0">
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:#888">Clientes:</span>
+          <strong>${d.clients}</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:#888">Del total:</span>
+          <strong>${pct}%</strong>
+        </div>
+      </div>
+    `);
+  });
+}
+
+// ── MAPA USA ──────────────────────────────────────────────────────────────────
+function initUSAMap() {
+  const map = L.map('usaMap').setView([37.8, -96], 4);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap © CARTO', maxZoom: 18
+  }).addTo(map);
+
+  const max = Math.max(...stateData.map(d=>d.clients));
+  stateData.forEach(d => {
+    const coords = stateCoords[d.state];
+    if (!coords) return;
+    const r = Math.max(12, Math.sqrt(d.clients/max)*48);
+    const pct = (d.clients/785*100).toFixed(1);
+    
+    // Color intensity based on count
+    const intensity = Math.floor(d.clients/max*180);
+    const red = Math.max(92, 255 - intensity);
+    const color = `rgb(${red}, ${Math.floor(10+intensity*0.06)}, ${Math.floor(34+intensity*0.18)})`;
+
+    const circle = L.circleMarker([coords.lat, coords.lng], {
+      radius: r, fillColor: color,
+      color: '#fff', weight: 2, fillOpacity: 0.88
+    }).addTo(map);
+
+    circle.bindPopup(`
+      <div style="font-family:Segoe UI;min-width:160px">
+        <div style="font-weight:700;font-size:15px;color:#5C0A22;text-align:center">${d.state}</div>
+        <hr style="border-color:#f0e0e5;margin:6px 0">
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:#888">Clientes:</span><strong>${d.clients}</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:#888">% del total USA:</span><strong>${pct}%</strong>
+        </div>
+      </div>
+    `);
+
+    // Label for bigger states
+    if (d.clients >= 10) {
+      L.marker([coords.lat, coords.lng], {
+        icon: L.divIcon({
+          className: '',
+          html: `<div style="color:#fff;font-weight:700;font-size:11px;text-align:center;text-shadow:0 1px 2px rgba(0,0,0,0.5);white-space:nowrap">${d.abbr}<br>${d.clients}</div>`,
+          iconAnchor: [16, 10]
+        })
+      }).addTo(map);
+    }
+  });
+}
+
+// ── TABLA PAÍSES ──────────────────────────────────────────────────────────────
+function buildCountryTable() {
+  const total = 919;
+  const max = countryData[0].clients;
+  let html = `<thead><tr>
+    <th>#</th><th>País</th><th>Clientes</th><th>% del total</th><th style="width:200px">Distribución</th>
+  </tr></thead><tbody>`;
+  countryData.forEach((d,i) => {
+    const pct = (d.clients/total*100).toFixed(1);
+    const barW = Math.round(d.clients/max*180);
+    html += `<tr>
+      <td class="rank">${i+1}</td>
+      <td><span class="country-flag">${d.flag}</span> ${d.country}</td>
+      <td><strong style="color:#5C0A22">${d.clients}</strong></td>
+      <td>${pct}%</td>
+      <td><div class="bar-cell"><div class="bar" style="width:${barW}px"></div><span class="pct">${pct}%</span></div></td>
+    </tr>`;
+  });
+  html += '</tbody>';
+  document.getElementById('countryTable').innerHTML = html;
+}
+
+// ── TABLA ESTADOS ─────────────────────────────────────────────────────────────
+function buildStateTable() {
+  const total = 785;
+  const max = stateData[0].clients;
+  let html = `<thead><tr>
+    <th>#</th><th>Estado</th><th>Sigla</th><th>Clientes</th><th>% de USA</th><th style="width:180px">Distribución</th>
+  </tr></thead><tbody>`;
+  stateData.forEach((d,i) => {
+    const pct = (d.clients/total*100).toFixed(1);
+    const barW = Math.round(d.clients/max*160);
+    html += `<tr>
+      <td class="rank">${i+1}</td>
+      <td>${d.state}</td>
+      <td style="color:#888;font-size:12px">${d.abbr}</td>
+      <td><strong style="color:#5C0A22">${d.clients}</strong></td>
+      <td>${pct}%</td>
+      <td><div class="bar-cell"><div class="bar" style="width:${barW}px"></div><span class="pct">${pct}%</span></div></td>
+    </tr>`;
+  });
+  html += '</tbody>';
+  document.getElementById('stateTable').innerHTML = html;
+}
+
+// Init
+initWorldMap();
+worldMapInit = true;
+</script>
+</body>
+</html>

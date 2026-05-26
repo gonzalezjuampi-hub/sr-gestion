@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SR — Pauta Publicitaria por Estado</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#f8f4f0;color:#222}
+header{background:#5C0A22;color:#fff;padding:18px 32px;display:flex;align-items:center;gap:14px}
+header h1{font-size:20px;font-weight:600}
+header p{font-size:12px;opacity:.7;margin-top:2px}
+.tabs{display:flex;background:#3d0617;padding:0 32px;gap:0;overflow-x:auto}
+.tab{padding:11px 20px;cursor:pointer;font-size:13px;font-weight:500;color:rgba(255,255,255,.6);border-bottom:3px solid transparent;white-space:nowrap;transition:all .15s}
+.tab:hover{color:#fff}
+.tab.active{color:#fff;border-bottom-color:#C9A84C}
+.container{padding:24px 32px;max-width:1200px;margin:0 auto}
+.panel{display:none}.panel.active{display:block}
+
+/* CARDS */
+.kpi-row{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:24px}
+.kpi{background:#fff;border-radius:10px;border:1px solid #e8ddd5;padding:16px 20px;min-width:150px;text-align:center;flex:1}
+.kpi .num{font-size:26px;font-weight:700;color:#5C0A22;font-family:Georgia}
+.kpi .lbl{font-size:12px;color:#888;margin-top:3px}
+.kpi .sub{font-size:11px;color:#C9A84C;margin-top:2px;font-weight:600}
+
+.section-title{font-size:15px;font-weight:700;color:#5C0A22;margin:24px 0 12px;display:flex;align-items:center;gap:8px}
+
+/* SEGMENTO CARDS */
+.seg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;margin-bottom:24px}
+.seg-card{background:#fff;border-radius:12px;border:1px solid #e8ddd5;overflow:hidden}
+.seg-header{padding:14px 18px;display:flex;align-items:center;gap:10px}
+.seg-icon{font-size:24px}
+.seg-label{font-weight:700;font-size:15px}
+.seg-sub{font-size:12px;color:#888;margin-top:1px}
+.seg-body{padding:14px 18px;border-top:1px solid #f0e8e3}
+.seg-body p{font-size:13px;color:#444;line-height:1.6;margin-bottom:8px}
+.seg-body p:last-child{margin-bottom:0}
+.tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;margin:2px}
+.tag-wine{background:#f5e6ec;color:#8B1A34}
+.tag-state{background:#e8f0fe;color:#1a73e8}
+.seg-states{padding:10px 18px;background:#faf7f4;font-size:12px;color:#666;border-top:1px solid #f0e8e3}
+.msg-box{background:#fdf8f0;border:1px solid #e8d5b0;border-radius:8px;padding:12px 14px;margin-top:8px}
+.msg-box .msg-label{font-size:11px;font-weight:700;color:#C9A84C;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.msg-box p{font-size:13px;color:#444;font-style:italic;line-height:1.5}
+
+/* TABLE */
+.table-wrap{background:#fff;border-radius:12px;border:1px solid #e8ddd5;overflow:hidden;margin-bottom:20px}
+.table-head-bar{padding:14px 20px;border-bottom:1px solid #f0e8e3;display:flex;align-items:center;justify-content:space-between}
+.table-head-bar span{font-size:14px;font-weight:600;color:#5C0A22}
+table{width:100%;border-collapse:collapse}
+th{background:#5C0A22;color:#fff;padding:10px 16px;font-size:12px;text-align:left;font-weight:600}
+td{padding:9px 16px;font-size:13px;border-bottom:1px solid #f5f0ed}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fdf7f4}
+.rank{color:#C9A84C;font-weight:700}
+.bar-wrap{display:flex;align-items:center;gap:8px}
+.bar{height:8px;background:#8B1A34;border-radius:4px}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-a{background:#fde8ec;color:#8B1A34}
+.badge-b{background:#fff3e0;color:#e65100}
+.badge-c{background:#e8f5e9;color:#2e7d32}
+.badge-d{background:#e8eaf6;color:#3949ab}
+.priority-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px}
+
+/* MENSAJES */
+.msg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+.msg-card{background:#fff;border-radius:12px;border:1px solid #e8ddd5;padding:18px}
+.msg-state{font-size:16px;font-weight:700;color:#5C0A22;margin-bottom:4px}
+.msg-meta{font-size:12px;color:#888;margin-bottom:12px}
+.msg-segment{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:2px 8px;border-radius:10px;display:inline-block;margin-bottom:10px}
+.msg-text{font-size:13px;color:#333;line-height:1.65;border-left:3px solid #C9A84C;padding-left:12px;font-style:italic}
+.msg-channel{margin-top:10px;font-size:12px;color:#888}
+.msg-channel span{font-weight:600;color:#555}
+</style>
+</head>
+<body>
+
+<header>
+  <div style="font-size:28px">🍷</div>
+  <div>
+    <h1>SR — Pauta Publicitaria por Estado</h1>
+    <p>Estrategia de comunicación basada en datos reales de 785 clientes USA</p>
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('resumen')">📊 Resumen Ejecutivo</div>
+  <div class="tab" onclick="showTab('segmentos')">🎯 Segmentos</div>
+  <div class="tab" onclick="showTab('mensajes')">✉️ Mensajes por Estado</div>
+  <div class="tab" onclick="showTab('tabla')">📋 Tabla Completa</div>
+</div>
+
+<div class="container">
+
+<!-- ── RESUMEN ── -->
+<div id="panel-resumen" class="panel active">
+  <div class="kpi-row">
+    <div class="kpi"><div class="num">785</div><div class="lbl">Clientes USA</div></div>
+    <div class="kpi"><div class="num">40+</div><div class="lbl">Estados activos</div></div>
+    <div class="kpi"><div class="num">10.7</div><div class="lbl">Botellas promedio</div><div class="sub">por pedido</div></div>
+    <div class="kpi"><div class="num">Florida</div><div class="lbl">Estado #1</div><div class="sub">90 clientes</div></div>
+    <div class="kpi"><div class="num">Durigutti</div><div class="lbl">Bodega más elegida</div></div>
+    <div class="kpi"><div class="num">Texas</div><div class="lbl">Mayor pedido promedio</div><div class="sub">13.2 botellas</div></div>
+  </div>
+
+  <div class="section-title">🗺️ Los 4 segmentos de mercado identificados</div>
+  <div class="seg-grid">
+
+    <div class="seg-card">
+      <div class="seg-header" style="background:#fde8ec">
+        <div class="seg-icon">🔴</div>
+        <div>
+          <div class="seg-label" style="color:#8B1A34">SEGMENTO A — Mercados Premium</div>
+          <div class="seg-sub">Alta concentración + alto volumen</div>
+        </div>
+      </div>
+      <div class="seg-body">
+        <p><strong>Florida, California, New York, Texas</strong> concentran el <strong>30% de todos los clientes USA</strong>. Son estados con gran comunidad viajera y cultura de vinos finos.</p>
+        <p>Texas se destaca con el <strong>mayor promedio de botellas (13.2)</strong>, lo que indica clientes con mayor poder adquisitivo o mayor frecuencia de compra.</p>
+        <div class="msg-box">
+          <div class="msg-label">💡 Estrategia recomendada</div>
+          <p>Campañas de fidelización, programa de referidos, newsletter mensual con novedades de cosecha. Máxima inversión publicitaria.</p>
+        </div>
+      </div>
+      <div class="seg-states">Estados: FL · CA · NY · TX</div>
+    </div>
+
+    <div class="seg-card">
+      <div class="seg-header" style="background:#fff3e0">
+        <div class="seg-icon">🟠</div>
+        <div>
+          <div class="seg-label" style="color:#e65100">SEGMENTO B — Mercados en Crecimiento</div>
+          <div class="seg-sub">Base sólida con potencial de expansión</div>
+        </div>
+      </div>
+      <div class="seg-body">
+        <p><strong>Virginia, Illinois, Colorado, Georgia, North Carolina, Puerto Rico</strong> tienen entre 15 y 22 clientes. Son mercados que ya conocen el producto y pueden crecer.</p>
+        <p>Georgia y Puerto Rico tienen <strong>promedios altos (12.7-12.9 botellas)</strong>, lo que los convierte en mercados de alto valor unitario.</p>
+        <div class="msg-box">
+          <div class="msg-label">💡 Estrategia recomendada</div>
+          <p>Campañas de activación, descuentos en segunda compra, destacar variedades nuevas. Inversión media-alta.</p>
+        </div>
+      </div>
+      <div class="seg-states">Estados: VA · IL · CO · GA · NC · PR</div>
+    </div>
+
+    <div class="seg-card">
+      <div class="seg-header" style="background:#e8f5e9">
+        <div class="seg-icon">🟢</div>
+        <div>
+          <div class="seg-label" style="color:#2e7d32">SEGMENTO C — Mercados Especializados</div>
+          <div class="seg-sub">Pocos clientes pero perfil premium</div>
+        </div>
+      </div>
+      <div class="seg-body">
+        <p><strong>Pennsylvania, Montana, Missouri, Tennessee, Connecticut</strong> tienen pocos clientes pero <strong>pedidos muy grandes</strong>. Pennsylvania promedia 22 botellas, Montana 16.5.</p>
+        <p>Son clientes de nicho: coleccionistas, restaurantes, o turistas que viajaron en grupo.</p>
+        <div class="msg-box">
+          <div class="msg-label">💡 Estrategia recomendada</div>
+          <p>Comunicación personalizada, cajas seleccionadas, ediciones limitadas. Foco en exclusividad y experiencia.</p>
+        </div>
+      </div>
+      <div class="seg-states">Estados: PA · MT · MO · TN · CT · SC</div>
+    </div>
+
+    <div class="seg-card">
+      <div class="seg-header" style="background:#e8eaf6">
+        <div class="seg-icon">🔵</div>
+        <div>
+          <div class="seg-label" style="color:#3949ab">SEGMENTO D — Mercados Emergentes</div>
+          <div class="seg-sub">1-5 clientes, primeros contactos</div>
+        </div>
+      </div>
+      <div class="seg-body">
+        <p><strong>Alaska, Iowa, Kansas, Alabama, Wyoming</strong> y otros estados con 1-3 clientes. Cada uno es un primer contacto que puede convertirse en prescriptor local.</p>
+        <p>Iowa tiene el pedido más grande de todos: <strong>30 botellas</strong>. No hay que subestimar estos mercados.</p>
+        <div class="msg-box">
+          <div class="msg-label">💡 Estrategia recomendada</div>
+          <p>Email de bienvenida personalizado, descuento en próxima compra, encuesta de experiencia. Inversión baja.</p>
+        </div>
+      </div>
+      <div class="seg-states">Estados: AK · IA · KS · AL · WY · NM · WV + más</div>
+    </div>
+
+  </div>
+
+  <div class="section-title">🍷 Bodegas más elegidas por región</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:24px">
+    <div style="background:#fff;border-radius:10px;border:1px solid #e8ddd5;padding:16px">
+      <div style="font-weight:700;color:#5C0A22;margin-bottom:8px">Florida, NY, CA, CO</div>
+      <span class="tag tag-wine">🏆 Durigutti</span>
+      <p style="font-size:12px;color:#888;margin-top:8px">La más elegida en los 4 principales mercados</p>
+    </div>
+    <div style="background:#fff;border-radius:10px;border:1px solid #e8ddd5;padding:16px">
+      <div style="font-weight:700;color:#5C0A22;margin-bottom:8px">Illinois, Virginia, Oregon</div>
+      <span class="tag tag-wine">🏆 Alta Vista</span>
+      <p style="font-size:12px;color:#888;margin-top:8px">Dominante en el centro-este y costa oeste</p>
+    </div>
+    <div style="background:#fff;border-radius:10px;border:1px solid #e8ddd5;padding:16px">
+      <div style="font-weight:700;color:#5C0A22;margin-bottom:8px">Texas</div>
+      <span class="tag tag-wine">🏆 Zuccardi</span>
+      <p style="font-size:12px;color:#888;margin-top:8px">TX es el único mercado donde Zuccardi lidera</p>
+    </div>
+    <div style="background:#fff;border-radius:10px;border:1px solid #e8ddd5;padding:16px">
+      <div style="font-weight:700;color:#5C0A22;margin-bottom:8px">MA, MI, MO, MT</div>
+      <span class="tag tag-wine">🏆 Andeluna</span>
+      <p style="font-size:12px;color:#888;margin-top:8px">Fuerte en mercados del norte y medio oeste</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── SEGMENTOS ── -->
+<div id="panel-segmentos" class="panel">
+  <div class="section-title">🎯 Estrategia detallada por segmento</div>
+
+  <div style="background:#fff;border-radius:12px;border:1px solid #e8ddd5;padding:20px;margin-bottom:16px;border-left:4px solid #8B1A34">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <span style="font-size:20px">🔴</span>
+      <div>
+        <div style="font-weight:700;font-size:16px;color:#8B1A34">SEGMENTO A — Mercados Premium</div>
+        <div style="font-size:13px;color:#888">Florida · California · New York · Texas · 238 clientes · 30% del total</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div>
+        <p style="font-size:13px;font-weight:600;color:#333;margin-bottom:6px">📣 Canal recomendado</p>
+        <p style="font-size:13px;color:#555">Email marketing mensual, Instagram/Facebook con segmentación geográfica, WhatsApp para clientes VIP con más de 12 botellas.</p>
+      </div>
+      <div>
+        <p style="font-size:13px;font-weight:600;color:#333;margin-bottom:6px">📅 Frecuencia</p>
+        <p style="font-size:13px;color:#555">Newsletter mensual + campaña especial en temporada alta (octubre-diciembre, época de viajes).</p>
+      </div>
+      <div>
+        <p style="font-size:13px;font-weight:600;color:#333;margin-bottom:6px">🎁 Oferta sugerida</p>
+        <p style="font-size:13px;color:#555">Programa de lealtad: "Comprá 12 botellas y la próxima visita tenés descuento en bodega". Referidos: "Recomendá a un amigo y ambos reciben beneficio".</p>
+      </div>
+      <div>
+        <p style="font-size:13px;font-weight:600;color:#333;margin-bottom:6px">📝 Tono del mensaje</p>
+        <p style="font-size:13px;color:#555">Exclusivo, personal, como si hablaras con alguien que ya conoce Mendoza. Recordar la experiencia vivida en la bodega.</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:#fff;border-radius:12px;border:1px solid #e8ddd5;padding:20px;margin-bottom:16px;border-left:4px solid #e65100">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <span style="font-size:20px">🟠</span>
+      <div>
+        <div style="font-weight:700;font-size:16px;color:#e65100">SEGMENTO B — Mercados en Crecimiento</div>
+        <div style="font-size:13px;color:#888">VA · IL · CO · GA · NC · PR · ~115 clientes</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div>
+        <p style="font-size:13px;font-weight:600;color:#333;margin-bottom:6px">📣 Canal recomendado</p>
+        <p style="font-size:13px;color:#555">Email cada 6-8 semanas. Destacar novedades de cosecha y maridajes. Contenido educativo sobre vinos mendocinos.</p>
+      </div>
+      <div>
+        <p style="font-size:13px;font-weight:600;color:#333;margin-bottom:6px">🎁 Oferta sugerida</p>
+        <p style="font-size:13px;color:#555">"Segunda visita con 10% off en bodega" o "Cajas temáticas: probá las 3 principales bodegas de Mendoza".</p>
+      </div>
+      <div>
+        <p style="font-size:13px;font-weight:600;color:#333;margin-bottom:6px">📝 Tono del mensaje</p>
+        <p style="font-size:13px;color:#555">Aspiracional, que recuerden lo que vivieron y tengan ganas de volver. "Mendoza te espera de vuelta".</p>
+      </div>
+      <div>
+        <p style="font-size:13px;font-weight:600;color:#333;margin-bottom:6px">🌟 Oportunidad especial</p>
+        <p style="font-size:13px;color:#555">Georgia y Puerto Rico tienen promedios altos de compra — tratarlos con perfil A aunque tengan menos volumen.</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:#fff;border-radius:12px;border:1px solid #e8ddd5;padding:20px;margin-bottom:16px;border-left:4px solid #2e7d32">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <span style="font-size:20px">🟢</span>
+      <div>
+        <div style="font-weight:700;font-size:16px;color:#2e7d32">SEGMENTO C — Mercados Especializados</div>
+        <div style="font-size:13px;color:#888">PA · MT · MO · TN · CT · SC · Nevada · más</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div>
+        <p style="font-size:13px;font-weight:600;color:#333;margin-bottom:6px">📣 Canal recomendado</p>
+        <p style="font-size:13px;color:#555">Email personalizado cada 2-3 meses. Mensaje a mano o firmado con nombre del responsable. Muy poca frecuencia pero alta personalización.</p>
+      </div>
+      <div>
+        <p style="font-size:13px;font-weight:600;color:#333;margin-bottom:6px">🎁 Oferta sugerida</p>
+        <p style="font-size:13px;color:#555">"Edición limitada reservada para vos" o "Selección del sommelier". Cajas de autor. Alto ticket, baja frecuencia.</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:#fff;border-radius:12px;border:1px solid #e8ddd5;padding:20px;border-left:4px solid #3949ab">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <span style="font-size:20px">🔵</span>
+      <div>
+        <div style="font-weight:700;font-size:16px;color:#3949ab">SEGMENTO D — Mercados Emergentes</div>
+        <div style="font-size:13px;color:#888">Todos los estados con 1-3 clientes</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div>
+        <p style="font-size:13px;font-weight:600;color:#333;margin-bottom:6px">📣 Canal recomendado</p>
+        <p style="font-size:13px;color:#555">Email de bienvenida automatizado + encuesta de experiencia. Luego newsletter general cada 3 meses.</p>
+      </div>
+      <div>
+        <p style="font-size:13px;font-weight:600;color:#333;margin-bottom:6px">🎁 Oferta sugerida</p>
+        <p style="font-size:13px;color:#555">"Bienvenido a la familia SR — 10% off en tu próximo pedido". Bajo costo, alto retorno potencial.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MENSAJES ── -->
+<div id="panel-mensajes" class="panel">
+  <div class="section-title">✉️ Mensajes sugeridos por estado (top 12)</div>
+  <p style="font-size:13px;color:#888;margin-bottom:16px">Estos son borradores de mensajes adaptados al perfil de cada estado. Podés usarlos como base para emails o WhatsApp.</p>
+  <div class="msg-grid" id="msgGrid"></div>
+</div>
+
+<!-- ── TABLA ── -->
+<div id="panel-tabla" class="panel">
+  <div class="section-title">📋 Todos los estados — datos completos</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Estado</th>
+          <th>Segmento</th>
+          <th>Clientes</th>
+          <th>Prom. Botellas</th>
+          <th>Bodega Favorita</th>
+          <th>Distribución</th>
+        </tr>
+      </thead>
+      <tbody id="stateTableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+</div>
+
+<script>
+const stateData = [
+  {state:'Florida',seg:'A',clients:90,avgB:10.8,bodega:'Durigutti',lat:27.99,lng:-81.76},
+  {state:'California',seg:'A',clients:51,avgB:8.7,bodega:'Durigutti',lat:36.17,lng:-119.74},
+  {state:'New York',seg:'A',clients:50,avgB:10.2,bodega:'Durigutti',lat:42.97,lng:-75.82},
+  {state:'Texas',seg:'A',clients:47,avgB:13.2,bodega:'Zuccardi',lat:31.97,lng:-99.9},
+  {state:'Virginia',seg:'B',clients:22,avgB:9.6,bodega:'Alta Vista',lat:37.77,lng:-78.17},
+  {state:'Puerto Rico',seg:'B',clients:22,avgB:12.7,bodega:'Durigutti',lat:18.22,lng:-66.59},
+  {state:'Illinois',seg:'B',clients:20,avgB:7.4,bodega:'Alta Vista',lat:40.35,lng:-88.99},
+  {state:'Colorado',seg:'B',clients:19,avgB:9.9,bodega:'Durigutti',lat:39.06,lng:-105.31},
+  {state:'Georgia',seg:'B',clients:16,avgB:12.9,bodega:'Alta Vista',lat:33.04,lng:-83.64},
+  {state:'North Carolina',seg:'B',clients:16,avgB:9.1,bodega:'Alta Vista',lat:35.63,lng:-79.81},
+  {state:'Massachusetts',seg:'C',clients:14,avgB:8.6,bodega:'Andeluna',lat:42.41,lng:-71.38},
+  {state:'Michigan',seg:'C',clients:14,avgB:9.1,bodega:'Andeluna',lat:44.31,lng:-85.6},
+  {state:'Oregon',seg:'C',clients:13,avgB:8.9,bodega:'Alta Vista',lat:44.57,lng:-122.07},
+  {state:'New Jersey',seg:'C',clients:12,avgB:10.0,bodega:'Durigutti',lat:40.3,lng:-74.52},
+  {state:'Connecticut',seg:'C',clients:10,avgB:10.8,bodega:'Alta Vista',lat:41.6,lng:-72.68},
+  {state:'Missouri',seg:'C',clients:10,avgB:11.4,bodega:'Andeluna',lat:38.46,lng:-92.29},
+  {state:'DC',seg:'C',clients:9,avgB:8.0,bodega:'Alta Vista',lat:38.9,lng:-77.03},
+  {state:'Ohio',seg:'C',clients:9,avgB:10.4,bodega:'Bemberg',lat:40.39,lng:-82.76},
+  {state:'Pennsylvania',seg:'C',clients:9,avgB:22.0,bodega:'Durigutti',lat:40.59,lng:-77.21},
+  {state:'Tennessee',seg:'C',clients:8,avgB:11.6,bodega:'Alta Vista',lat:35.86,lng:-86.35},
+  {state:'Arizona',seg:'C',clients:7,avgB:11.4,bodega:'Durigutti',lat:34.17,lng:-111.09},
+  {state:'Maryland',seg:'C',clients:7,avgB:11.4,bodega:'Alta Vista',lat:39.06,lng:-76.8},
+  {state:'Washington',seg:'C',clients:6,avgB:7.0,bodega:'Alta Vista',lat:47.4,lng:-121.49},
+  {state:'Nevada',seg:'C',clients:6,avgB:11.0,bodega:'Durigutti',lat:39.33,lng:-116.63},
+  {state:'South Carolina',seg:'C',clients:6,avgB:12.0,bodega:'Durigutti',lat:33.84,lng:-80.9},
+  {state:'Montana',seg:'C',clients:4,avgB:16.5,bodega:'Andeluna',lat:46.88,lng:-110.36},
+  {state:'Nebraska',seg:'D',clients:4,avgB:7.5,bodega:'Alta Vista',lat:41.49,lng:-99.9},
+  {state:'Kentucky',seg:'D',clients:3,avgB:10.0,bodega:'Alta Vista',lat:37.84,lng:-84.67},
+  {state:'Wisconsin',seg:'D',clients:3,avgB:12.0,bodega:'Durigutti',lat:44.27,lng:-89.62},
+  {state:'Indiana',seg:'D',clients:3,avgB:10.0,bodega:'Durigutti',lat:40.27,lng:-86.13},
+  {state:'Maine',seg:'D',clients:3,avgB:11.0,bodega:'Durigutti',lat:45.25,lng:-69.44},
+  {state:'New Hampshire',seg:'D',clients:2,avgB:3.0,bodega:'Andeluna',lat:43.45,lng:-71.56},
+  {state:'Idaho',seg:'D',clients:2,avgB:6.5,bodega:'Andeluna',lat:44.24,lng:-114.48},
+  {state:'Minnesota',seg:'D',clients:2,avgB:9.0,bodega:'Durigutti',lat:46.39,lng:-94.64},
+  {state:'Alaska',seg:'D',clients:2,avgB:7.5,bodega:'Andeluna',lat:64.2,lng:-153.37},
+  {state:'Arkansas',seg:'D',clients:2,avgB:12.0,bodega:'Sottano',lat:34.97,lng:-92.37},
+  {state:'Utah',seg:'D',clients:1,avgB:12.0,bodega:'Alta Vista',lat:39.32,lng:-111.09},
+  {state:'New Mexico',seg:'D',clients:1,avgB:6.0,bodega:'Durigutti',lat:34.84,lng:-106.25},
+  {state:'Iowa',seg:'D',clients:1,avgB:30.0,bodega:'Alta Vista',lat:42.0,lng:-93.62},
+  {state:'Kansas',seg:'D',clients:1,avgB:24.0,bodega:'Andeluna',lat:38.5,lng:-98.35},
+  {state:'Louisiana',seg:'D',clients:1,avgB:12.0,bodega:'Alta Vista',lat:30.98,lng:-91.96},
+  {state:'West Virginia',seg:'D',clients:1,avgB:12.0,bodega:'Alta Vista',lat:38.49,lng:-80.95},
+  {state:'Wyoming',seg:'D',clients:1,avgB:6.0,bodega:'Durigutti',lat:43.08,lng:-107.29},
+  {state:'Alabama',seg:'D',clients:1,avgB:18.0,bodega:'Andeluna',lat:32.31,lng:-86.9},
+];
+
+const segColors = {A:'#fde8ec',B:'#fff3e0',C:'#e8f5e9',D:'#e8eaf6'};
+const segText   = {A:'#8B1A34',B:'#e65100',C:'#2e7d32',D:'#3949ab'};
+const segLabel  = {A:'Premium','B':'Crecimiento',C:'Especializado',D:'Emergente'};
+
+const messages = [
+  {state:'Florida',seg:'A',clients:90,avgB:10.8,bodega:'Durigutti',
+   msg:'¡Hola [Nombre]! Hace un tiempo tuviste la oportunidad de visitar Mendoza y llevarte unos vinos increíbles. Queremos que sepas que la nueva cosecha de Durigutti ya está lista — y acordarnos de vos es lo primero que hicimos. Escribinos y reservamos tus botellas.',
+   channel:'Email + WhatsApp VIP'},
+  {state:'Texas',seg:'A',clients:47,avgB:13.2,bodega:'Zuccardi',
+   msg:'[Nombre], en Texas saben bien que las cosas grandes merecen lo mejor. Los Zuccardi 2023 acaban de llegar y son exactamente eso: grandes. Más de 13 botellas es tu promedio — sabemos que no te conformás con poco. Te guardamos tu selección.',
+   channel:'Email mensual + Instagram geo TX'},
+  {state:'New York',seg:'A',clients:50,avgB:10.2,bodega:'Durigutti',
+   msg:'Nueva York, nuevo envío. [Nombre], Mendoza no se olvidó de vos. Los Durigutti de esta temporada tienen algo especial que solo alguien con tu paladar va a apreciar. ¿Repetimos?',
+   channel:'Email + newsletter'},
+  {state:'California',seg:'A',clients:51,avgB:8.7,bodega:'Durigutti',
+   msg:'[Nombre], California tiene grandes vinos — pero Mendoza tiene los que te hicieron cruzar el mundo. Los Durigutti 2023 están disponibles. Como la primera vez, pero mejor.',
+   channel:'Email + redes con geo CA'},
+  {state:'Georgia',seg:'B',clients:16,avgB:12.9,bodega:'Alta Vista',
+   msg:'[Nombre], Georgia es tierra de buen gusto — y tus elecciones en Mendoza lo confirmaron. Con un promedio de casi 13 botellas, sabemos que no tomás vino así nomás. Alta Vista tiene algo nuevo que te va a interesar.',
+   channel:'Email personalizado cada 2 meses'},
+  {state:'Puerto Rico',seg:'B',clients:22,avgB:12.7,bodega:'Durigutti',
+   msg:'[Nombre], el sol de Puerto Rico y los vinos de Mendoza tienen algo en común: intensidad. Durigutti reservó algo especial para sus amigos del Caribe. ¿Seguimos brindando juntos?',
+   channel:'Email + WhatsApp'},
+  {state:'Pennsylvania',seg:'C',clients:9,avgB:22.0,bodega:'Durigutti',
+   msg:'[Nombre], con 22 botellas en promedio sos de nuestros clientes más apasionados. Eso no se olvida. Tenemos una selección limitada reservada para quienes realmente entienden de vinos mendocinos. ¿Querés ser de los primeros en elegir?',
+   channel:'Email muy personalizado, firma a mano'},
+  {state:'Montana',seg:'C',clients:4,avgB:16.5,bodega:'Andeluna',
+   msg:'[Nombre], Montana tiene paisajes únicos — igual que los viñedos de Andeluna. No muchos llegan hasta allá ni hasta acá, pero cuando lo hacen, lo hacen en serio. Tenemos novedades de la última cosecha guardadas para vos.',
+   channel:'Email personalizado cada 3 meses'},
+  {state:'Illinois',seg:'B',clients:20,avgB:7.4,bodega:'Alta Vista',
+   msg:'[Nombre], Chicago es una ciudad que aprecia la calidad. Los Alta Vista que elegiste en Mendoza siguen siendo una de las mejores cosas que te llevaste de tu viaje. Este año tenemos algo nuevo que también te va a gustar.',
+   channel:'Email bimestral'},
+  {state:'Colorado',seg:'B',clients:19,avgB:9.9,bodega:'Durigutti',
+   msg:'[Nombre], las montañas de Colorado y los Andes de Mendoza tienen algo en común: altura y carácter. Durigutti saca lo mejor de esa altitud. ¿Renovamos tu selección?',
+   channel:'Email + Instagram geo CO'},
+  {state:'Iowa',seg:'D',clients:1,avgB:30.0,bodega:'Alta Vista',
+   msg:'[Nombre], 30 botellas en un pedido es algo que no pasa todos los días. Eso nos dice que sabés exactamente lo que querés. Somos poca gente en Iowa con este gusto — y eso nos une. Te escribimos para no perder el contacto.',
+   channel:'Email muy personalizado'},
+  {state:'Virginia',seg:'B',clients:22,avgB:9.6,bodega:'Alta Vista',
+   msg:'[Nombre], Virginia tiene historia y elegancia — igual que los Alta Vista que llevaste de Mendoza. Con la nueva cosecha lista, es el momento perfecto para renovar tu bodega personal.',
+   channel:'Email cada 6 semanas'},
+];
+
+function showTab(id){
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  const tabs=['resumen','segmentos','mensajes','tabla'];
+  document.querySelectorAll('.tab')[tabs.indexOf(id)].classList.add('active');
+  document.getElementById('panel-'+id).classList.add('active');
+  if(id==='mensajes') buildMessages();
+  if(id==='tabla') buildTable();
+}
+
+function buildMessages(){
+  const g = document.getElementById('msgGrid');
+  if(g.innerHTML) return;
+  g.innerHTML = messages.map(m=>`
+    <div class="msg-card">
+      <div class="msg-state">${m.state}</div>
+      <div class="msg-meta">${m.clients} clientes · ${m.avgB} botellas prom. · Favorita: ${m.bodega}</div>
+      <span class="msg-segment" style="background:${segColors[m.seg]};color:${segText[m.seg]}">Segmento ${m.seg} — ${segLabel[m.seg]}</span>
+      <div class="msg-text">${m.msg}</div>
+      <div class="msg-channel">📣 Canal: <span>${m.channel}</span></div>
+    </div>
+  `).join('');
+}
+
+function buildTable(){
+  const b = document.getElementById('stateTableBody');
+  if(b.innerHTML) return;
+  const max = stateData[0].clients;
+  b.innerHTML = stateData.map((d,i)=>`
+    <tr>
+      <td class="rank">${i+1}</td>
+      <td><strong>${d.state}</strong></td>
+      <td><span class="badge badge-${d.seg.toLowerCase()}">Seg. ${d.seg} — ${segLabel[d.seg]}</span></td>
+      <td><strong style="color:#5C0A22">${d.clients}</strong></td>
+      <td>${d.avgB} 🍾</td>
+      <td>${d.bodega}</td>
+      <td><div class="bar-wrap"><div class="bar" style="width:${Math.round(d.clients/max*160)}px"></div><span style="font-size:11px;color:#888">${(d.clients/785*100).toFixed(1)}%</span></div></td>
+    </tr>
+  `).join('');
+}
+</script>
+</body>
+</html>
