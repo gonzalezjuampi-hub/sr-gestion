@@ -402,8 +402,8 @@ function setStatus(msg, type) {
 }
 
 async function extractData() {
-  const apiKey = SR_API_KEY;
-  if (!apiKey || apiKey === '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') { setStatus('⚠️ El administrador no configuró la clave de API.', 'err'); return; }
+  const apiKey = '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';
+  if (!apiKey || apiKey === if (!apiKey) { setStatus('⚠️ Error de configuración.', 'err'); return; }
   if (!imageBase64) { setStatus('⚠️ Primero subí una imagen del formulario.', 'err'); return; }
 
   document.getElementById('extractBtn').disabled = true;
